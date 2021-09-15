@@ -6,17 +6,19 @@ const products = [
 ];
 //Функция для формирования верстки каждого товара
 //Добавить в выводе изображение
-const renderProduct = (title, price) => {
+const renderProduct = (item) => {
     return `<div class="product-item">
-                <h3>${title}</h3>
-                <p>${price}</p>
+                <h3>${item.title}</h3>
+                <p>${item.price}</p>
                 <button class="buy-btn">Купить</button>
             </div>`
 };
 const renderPage = list => {
-    const productsList = list.map(item => renderProduct(item.title,item.price));
-    console.log(productsList);
-    document.querySelector('.products').innerHTML = productsList;
+    const productsList = list.map(item => renderProduct(item));
+    // console.log(productsList);
+    let innerText = '';
+    productsList.forEach(element => innerText += element);
+    document.querySelector('.products').innerHTML = innerText;
 };
 
 renderPage(products);
