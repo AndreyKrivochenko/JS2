@@ -16,8 +16,7 @@ const renderProduct = (item) => {
 };
 const renderPage = list => {
     const productsList = list.map(item => renderProduct(item));
-    let innerText = '';
-    productsList.forEach(element => innerText += element);
+    let innerText = productsList.join('');
     document.querySelector('.products').innerHTML = innerText;
 };
 
