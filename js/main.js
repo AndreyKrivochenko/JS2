@@ -1,29 +1,29 @@
-// const products = [
-//     {id: 1, title: 'Notebook', price: 2000, img: 'img/no-img.png'},
-//     {id: 2, title: 'Mouse', price: 20, img: 'img/no-img.png'},
-//     {id: 3, title: 'Keyboard', price: 200, img: 'img/no-img.png'},
-//     {id: 4, title: 'Gamepad', price: 50, img: 'img/no-img.png'},
-// ];
-// //Функция для формирования верстки каждого товара
-// //Добавить в выводе изображение
-// const renderProduct = (item) => {
-//     return `<div class="product-item">
-//                 <img src="${item.img}" alt="image">
-//                 <h3>${item.title}</h3>
-//                 <p>${item.price}</p>
-//                 <button class="buy-btn">Купить</button>
-//             </div>`
-// };
-// const renderPage = list => {
-//     const productsList = list.map(item => renderProduct(item));
-//     let innerText = productsList.join('');
-//     document.querySelector('.products').innerHTML = innerText;
-// };
-
-// renderPage(products);
+const API = 'https://raw.githubusercontent.com/GeekBrainsTutorial/online-store-api/master/responses';
 
 class CartList{
-    constructor(){}
+    constructor(container='.basket-content'){
+        this.container = container;
+        this.goods = [];
+        this.basketWindow = document.querySelector('.basket')
+        this.basketBtn = document.querySelector('.btn-cart');
+        this.basketCloseBtn = document.querySelector('.basket-close-btn');
+        this.basketBtn.addEventListener('click', () => {
+            this.basketWindow.style.display = 'block'
+        })
+        this.basketCloseBtn.addEventListener('click', () => {
+            this.basketWindow.style.display = 'none'
+        })
+        this.#getProducts()
+            .then(data => {
+                this.goods = data.contents;
+                this.render()
+            })
+    }
+
+    #getProducts(){
+        return fetch(`${API}/getBasket.json`)
+            .then(result => result.json())
+    }
 
     addItem(){}
 
@@ -31,14 +31,28 @@ class CartList{
 
     getSummCart(){}
 
-    render(){}
+    render(){
+        const block = document.querySelector(this.container);
+        for(let product of this.goods){
+            const item = new CartItem(product);
+            block.insertAdjacentHTML("beforeend", item.render());
+        }
+    }
 
 }
 
 class CartItem{
-    constructor(){}
-
-    render(){}
+    constructor(product){
+        this.id = product.id_product;
+        this.title = product.product_name;
+        this.price = product.price;
+    }
+    render(){
+        return `<div class="basket-product-item">
+                    <p>${this.title}</p>
+                    <p>${this.price} руб.</p>
+                </div>`
+    }
 
 }
 
@@ -46,16 +60,16 @@ class ProductList{
     constructor(container='.products'){
         this.container = container;
         this.goods = [];
-        this.#fetchProducts();
-        this.render();
+        // this.#fetchProducts();
+        this.#getProducts()
+            .then(data => {
+                this.goods = data;
+                this.render()
+            })
     }
-    #fetchProducts(){
-        this.goods = [
-            {id: 1, title: 'Notebook', price: 2000, img: 'img/no-img.png'},
-            {id: 2, title: 'Mouse', price: 20, img: 'img/no-img.png'},
-            {id: 3, title: 'Keyboard', price: 200, img: 'img/no-img.png'},
-            {id: 4, title: 'Gamepad', price: 50, img: 'img/no-img.png'},
-        ];
+    #getProducts(){
+        return fetch(`${API}/catalogData.json`)
+            .then(result => result.json())
     }
     render(){
         const block = document.querySelector(this.container);
@@ -72,17 +86,17 @@ class ProductList{
 }
 
 class ProductItem{
-    constructor(product){
-        this.id = product.id;
-        this.title = product.title;
+    constructor(product, img = 'https://via.placeholder.com/210'){
+        this.id = product.id_product;
+        this.title = product.product_name;
         this.price = product.price;
-        this.img = product.img;
+        this.img = img;
     }
     render(){
         return `<div class="product-item">
                     <img src="${this.img}" alt="image">
                     <h3>${this.title}</h3>
-                    <p>${this.price}</p>
+                    <p>${this.price} руб.</p>
                     <button class="buy-btn">Купить</button>
                 </div>`
     }
@@ -90,3 +104,4 @@ class ProductItem{
 
 let list = new ProductList();
 console.log(list.getSumm());
+let basket = new CartList();
