@@ -1,107 +1,66 @@
 const API = 'https://raw.githubusercontent.com/GeekBrainsTutorial/online-store-api/master/responses';
 
-class CartList{
-    constructor(container='.basket-content'){
-        this.container = container;
-        this.goods = [];
-        this.basketWindow = document.querySelector('.basket')
-        this.basketBtn = document.querySelector('.btn-cart');
-        this.basketCloseBtn = document.querySelector('.basket-close-btn');
-        this.basketBtn.addEventListener('click', () => {
-            this.basketWindow.style.display = 'block'
-        })
-        this.basketCloseBtn.addEventListener('click', () => {
-            this.basketWindow.style.display = 'none'
-        })
-        this.#getProducts()
-            .then(data => {
-                this.goods = data.contents;
-                this.render()
+var vm = new Vue({
+    el: "#app",
+    data: {
+        catalogUrl: '/catalogData.json',
+        basketUrl:'/getBasket.json',
+        products: [],
+        basketGoods: [],
+        filtered: [],
+        imgCatalog: 'https://via.placeholder.com/210',
+        userSearch: ''
+    },
+    methods: {
+        getJson(url){
+            return fetch(url)
+                .then(result => result.json())
+                .catch(error => {
+                    console.log(error);
+                })
+        },
+        addProduct(product){
+            console.log(product.id_product);
+        },
+        filter(){
+            const regexp = new RegExp(this.userSearch, 'i');
+            this.filtered = this.products.filter(product => regexp.test(product.product_name));
+            this.products.forEach(el => {
+                const block = document.querySelector(`.product-item[data-id="${el.id_product}"]`);
+                if(!this.filtered.includes(el)){
+                    block.classList.add('invisible');
+                } else {
+                    block.classList.remove('invisible');
+                }
             })
-    }
-
-    #getProducts(){
-        return fetch(`${API}/getBasket.json`)
-            .then(result => result.json())
-    }
-
-    addItem(){}
-
-    deleteItem(){}
-
-    getSummCart(){}
-
-    render(){
-        const block = document.querySelector(this.container);
-        for(let product of this.goods){
-            const item = new CartItem(product);
-            block.insertAdjacentHTML("beforeend", item.render());
+        },
+        show(){
+            const block = document.querySelector('.basket');
+            if(block.classList.contains('invisible')){
+                block.classList.remove('invisible')
+            } else {
+                block.classList.add('invisible')
+            }
         }
+    },
+    mounted(){
+       this.getJson(`${API + this.catalogUrl}`)
+           .then(data => {
+               for(let el of data){
+                   this.products.push(el);
+               };
+           });
+        this.getJson(`${API + this.basketUrl}`)
+           .then(data => {
+               for(let el of data.contents){
+                   this.basketGoods.push(el);
+               };
+           });
+        // this.getJson(`getProducts.json`)
+        //     .then(data => {
+        //         for(let el of data){
+        //             this.products.push(el);
+        //         }
+        //     })
     }
-
-}
-
-class CartItem{
-    constructor(product){
-        this.id = product.id_product;
-        this.title = product.product_name;
-        this.price = product.price;
-    }
-    render(){
-        return `<div class="basket-product-item">
-                    <p>${this.title}</p>
-                    <p>${this.price} руб.</p>
-                </div>`
-    }
-
-}
-
-class ProductList{
-    constructor(container='.products'){
-        this.container = container;
-        this.goods = [];
-        // this.#fetchProducts();
-        this.#getProducts()
-            .then(data => {
-                this.goods = data;
-                this.render()
-            })
-    }
-    #getProducts(){
-        return fetch(`${API}/catalogData.json`)
-            .then(result => result.json())
-    }
-    render(){
-        const block = document.querySelector(this.container);
-        for(let product of this.goods){
-            const item = new ProductItem(product);
-            block.insertAdjacentHTML("beforeend", item.render());
-        }
-    }
-    getSumm(){
-        let allSumm = 0;
-        this.goods.forEach(products => allSumm += products.price);
-        return `Сумма стоимости всех товаров в списке равна ${allSumm}`
-    }
-}
-
-class ProductItem{
-    constructor(product, img = 'https://via.placeholder.com/210'){
-        this.id = product.id_product;
-        this.title = product.product_name;
-        this.price = product.price;
-        this.img = img;
-    }
-    render(){
-        return `<div class="product-item">
-                    <img src="${this.img}" alt="image">
-                    <h3>${this.title}</h3>
-                    <p>${this.price} руб.</p>
-                    <button class="buy-btn">Купить</button>
-                </div>`
-    }
-}
-
-let list = new ProductList();
-console.log(list.getSumm());
-let basket = new CartList();
+})
